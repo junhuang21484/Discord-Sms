@@ -1,0 +1,12 @@
+{
+  "sms_setting": {
+    "account_id": "Your Twilio Account ID Here",
+    "auth_token": "Your Twilio Auth Token Here",
+    "twilio_number": "Your Twilio Phone #",
+    "receiving_number": "Your receiving number, should be formatted like the twilio number"
+  },
+  "discord_setting": {
+    "listen_channels": ["Your discord channels that you want to listen"],
+    "user_token": "Your discord auth token"
+  }
+}

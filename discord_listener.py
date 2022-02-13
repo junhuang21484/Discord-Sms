@@ -10,6 +10,19 @@ def print_log(part, log_msg):
     print(f"[{datetime.datetime.strftime(time_now, '%Y-%m-%d %H:%M:%S')} ({part})]: {log_msg}")
 
 
+def parse_embeds(embed_json):
+    print(embed_json)
+    if embed_json:
+        fields = embed_json['fields']
+        embed_content = ""
+        for field in fields:
+            embed_content += f"{field['name']}\n{field['value']}\n"
+
+        return embed_content
+
+    return
+
+
 class DiscordListener:
     def __init__(self, user_token, listen_channels, sms_sender):
         self.user_token = user_token
@@ -64,10 +77,18 @@ class DiscordListener:
             if event and event['t'] == "MESSAGE_CREATE" and event['d']['channel_id'] in self.listen_channels:
                 content = event['d']['content']
                 # Embed support to be added
-                embeds = event['d']['embeds']
+                embed_content = parse_embeds(event['d']['embeds'][0])
 
-                self.sms_sender.send_message(f"Channel ID: {event['d']['channel_id']}\n"
-                                             f"Content: {content}")
+                if content and embed_content:
+                    self.sms_sender.send_message(f"Channel ID: {event['d']['channel_id']}\n\n"
+                                                 f"Text Content\n{content}\n\n"
+                                                 f"Embed Content\n{embed_content}")
+                elif content:
+                    self.sms_sender.send_message(f"Channel ID: {event['d']['channel_id']}\n\n"
+                                                 f"Text Content\n{content}")
+                elif embed_content:
+                    self.sms_sender.send_message(f"Channel ID: {event['d']['channel_id']}\n\n"
+                                                 f"Embed Content\n{embed_content}")
 
 
 def create_discord_listener(setting_dict, sms_sender) -> DiscordListener:

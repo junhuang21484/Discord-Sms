@@ -40,13 +40,17 @@ class DiscordListener:
             return json.loads(response)
 
     def send_heartbeat(self, interval):
-        print_log("Discord Listener", f'Heartbeat begin - Sleeping Interval: {interval}s')
-        time.sleep(interval)
-        hb_json = {
-            "op": 1,
-            "d": None
-        }
-        self.send_json_request(hb_json)
+        while True:
+            try:
+                print_log("Discord Listener", f'Heartbeat begin - Sleeping Interval: {interval}s')
+                time.sleep(interval)
+                hb_json = {
+                    "op": 1,
+                    "d": None
+                }
+                self.send_json_request(hb_json)
+            except:
+                print_log("CONNECTION", "Heartbeat failed to sent")
 
     def connect(self):
         print_log("Discord Listener", "Connecting to discord gateway")
@@ -73,22 +77,30 @@ class DiscordListener:
     def start(self):
         self.connect()
         while True:
-            event = self.receive_json_response()
-            if event and event['t'] == "MESSAGE_CREATE" and event['d']['channel_id'] in self.listen_channels:
-                content = event['d']['content']
-                # Embed support to be added
-                embed_content = parse_embeds(event['d']['embeds'][0])
+            try:
+                event = self.receive_json_response()
+                if event and event['t'] == "MESSAGE_CREATE" and event['d']['channel_id'] in self.listen_channels:
+                    content = event['d']['content']
+                    # Embed support to be added
+                    embed_content = "" if not event['d']['embeds'] else parse_embeds(event['d']['embeds'][0])
 
-                if content and embed_content:
-                    self.sms_sender.send_message(f"Channel ID: {event['d']['channel_id']}\n\n"
-                                                 f"Text Content\n{content}\n\n"
-                                                 f"Embed Content\n{embed_content}")
-                elif content:
-                    self.sms_sender.send_message(f"Channel ID: {event['d']['channel_id']}\n\n"
-                                                 f"Text Content\n{content}")
-                elif embed_content:
-                    self.sms_sender.send_message(f"Channel ID: {event['d']['channel_id']}\n\n"
-                                                 f"Embed Content\n{embed_content}")
+                    if content and embed_content:
+                        self.sms_sender.send_message(f"Channel ID: {event['d']['channel_id']}\n\n"
+                                                     f"Text Content\n{content}\n\n"
+                                                     f"Embed Content\n{embed_content}")
+                    elif content:
+                        self.sms_sender.send_message(f"Channel ID: {event['d']['channel_id']}\n\n"
+                                                     f"Text Content\n{content}")
+                    elif embed_content:
+                        self.sms_sender.send_message(f"Channel ID: {event['d']['channel_id']}\n\n"
+                                                     f"Embed Content\n{embed_content}")
+            except websocket.WebSocketConnectionClosedException:
+                print_log("CONNECTION", "Connection lost...")
+                self.ws.close()
+
+                print_log("CONNECTION", "Trying to reconnect...")
+                self.connect()
+                print_log("CONNECTION", f"Connection status - {self.ws.connected}")
 
 
 def create_discord_listener(setting_dict, sms_sender) -> DiscordListener:

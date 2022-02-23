@@ -51,6 +51,7 @@ class DiscordListener:
                 self.send_json_request(hb_json)
             except:
                 print_log("CONNECTION", "Heartbeat failed to sent")
+                break
 
     def connect(self):
         print_log("Discord Listener", "Connecting to discord gateway")

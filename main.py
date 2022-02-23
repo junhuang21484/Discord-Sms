@@ -3,7 +3,7 @@ from discord_listener import create_discord_listener
 import json
 import datetime
 
-VERSION = "V0.0.2"
+VERSION = "V0.0.3"
 
 
 def print_log(part, log_msg):

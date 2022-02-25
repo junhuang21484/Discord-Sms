@@ -40,8 +40,8 @@ class DiscordListener:
             return json.loads(response)
 
     def send_heartbeat(self, interval):
-        while True:
-            try:
+        try:
+            while True:
                 print_log("Discord Listener", f'Heartbeat begin - Sleeping Interval: {interval}s')
                 time.sleep(interval)
                 hb_json = {
@@ -49,9 +49,8 @@ class DiscordListener:
                     "d": None
                 }
                 self.send_json_request(hb_json)
-            except:
-                print_log("CONNECTION", "Heartbeat failed to sent")
-                break
+        except:
+            print_log("CONNECTION", "Heartbeat failed to sent")
 
     def connect(self):
         print_log("Discord Listener", "Connecting to discord gateway")
